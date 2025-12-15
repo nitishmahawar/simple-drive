@@ -18,6 +18,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "@orpc/client": "^1.12.3",
+    "@orpc/experimental-ratelimit": "^1.12.3",
     "@orpc/server": "^1.12.3",
     "@orpc/tanstack-query": "^1.12.3",
     "@tabler/icons-react": "^3.36.0",

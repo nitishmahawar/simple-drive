@@ -9,9 +9,18 @@ import {
   IconLayoutList,
   IconFilter,
   IconX,
+  IconPhoto,
+  IconVideo,
+  IconMusic,
+  IconFileText,
+  IconFileZip,
+  IconApps,
+  IconLetterCase,
+  IconDatabase,
+  IconCalendarPlus,
+  IconCalendarTime,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,6 +29,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 export type SortBy = "name" | "size" | "createdAt" | "updatedAt";
 export type SortOrder = "asc" | "desc";
@@ -46,6 +61,111 @@ interface FileToolbarProps {
   onViewModeChange: (viewMode: ViewMode) => void;
   showFileTypeFilter?: boolean;
 }
+
+const fileTypeItems = [
+  {
+    value: "all",
+    label: (
+      <>
+        <IconApps className="text-muted-foreground" />
+        <span>All Types</span>
+      </>
+    ),
+  },
+  {
+    value: "image",
+    label: (
+      <>
+        <IconPhoto className="text-muted-foreground" />
+        <span>Images</span>
+      </>
+    ),
+  },
+  {
+    value: "video",
+    label: (
+      <>
+        <IconVideo className="text-muted-foreground" />
+        <span>Videos</span>
+      </>
+    ),
+  },
+  {
+    value: "audio",
+    label: (
+      <>
+        <IconMusic className="text-muted-foreground" />
+        <span>Audio</span>
+      </>
+    ),
+  },
+  {
+    value: "document",
+    label: (
+      <>
+        <IconFileText className="text-muted-foreground" />
+        <span>Documents</span>
+      </>
+    ),
+  },
+  {
+    value: "archive",
+    label: (
+      <>
+        <IconFileZip className="text-muted-foreground" />
+        <span>Archives</span>
+      </>
+    ),
+  },
+  {
+    value: "other",
+    label: (
+      <>
+        <IconApps className="text-muted-foreground" />
+        <span>Other</span>
+      </>
+    ),
+  },
+];
+
+const sortItems = [
+  {
+    value: "name",
+    label: (
+      <>
+        <IconLetterCase className="text-muted-foreground" />
+        <span>Name</span>
+      </>
+    ),
+  },
+  {
+    value: "size",
+    label: (
+      <>
+        <IconDatabase className="text-muted-foreground" />
+        <span>Size</span>
+      </>
+    ),
+  },
+  {
+    value: "createdAt",
+    label: (
+      <>
+        <IconCalendarPlus className="text-muted-foreground" />
+        <span>Date created</span>
+      </>
+    ),
+  },
+  {
+    value: "updatedAt",
+    label: (
+      <>
+        <IconCalendarTime className="text-muted-foreground" />
+        <span>Date modified</span>
+      </>
+    ),
+  },
+];
 
 export const FileToolbar = ({
   search,
@@ -83,25 +203,31 @@ export const FileToolbar = ({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       {/* Search */}
-      <div className="relative flex-1 max-w-sm">
-        <IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search files and folders..."
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
-          className="pl-9 pr-9"
-        />
-        {localSearch && (
-          <button
-            onClick={() => {
-              setLocalSearch("");
-              onSearchChange("");
-            }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            <IconX className="size-4" />
-          </button>
-        )}
+      <div className="flex-1 max-w-xs">
+        <InputGroup>
+          <InputGroupAddon>
+            <IconSearch className="size-4 text-muted-foreground" />
+          </InputGroupAddon>
+          <InputGroupInput
+            placeholder="Search files and folders..."
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+          />
+          {localSearch && (
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => {
+                  setLocalSearch("");
+                  onSearchChange("");
+                }}
+              >
+                <IconX className="size-4 text-muted-foreground" />
+              </InputGroupButton>
+            </InputGroupAddon>
+          )}
+        </InputGroup>
       </div>
 
       {/* Filters and View */}
@@ -110,19 +236,18 @@ export const FileToolbar = ({
         {showFileTypeFilter && (
           <Select
             value={fileType}
+            items={fileTypeItems}
             onValueChange={(v) => onFileTypeChange(v as FileType)}
           >
-            <SelectTrigger className="w-[130px]">
-              <IconFilter className="size-4 mr-2" />
+            <SelectTrigger className="w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="image">Images</SelectItem>
-              <SelectItem value="video">Videos</SelectItem>
-              <SelectItem value="audio">Audio</SelectItem>
-              <SelectItem value="document">Documents</SelectItem>
-              <SelectItem value="archive">Archives</SelectItem>
+              {fileTypeItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         )}
@@ -131,15 +256,17 @@ export const FileToolbar = ({
         <Select
           value={sortBy}
           onValueChange={(v) => onSortByChange(v as SortBy)}
+          items={sortItems}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[150px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="size">Size</SelectItem>
-            <SelectItem value="createdAt">Date created</SelectItem>
-            <SelectItem value="updatedAt">Date modified</SelectItem>
+            {sortItems.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -162,11 +289,11 @@ export const FileToolbar = ({
           value={viewMode}
           onValueChange={(v) => onViewModeChange(v as ViewMode)}
         >
-          <TabsList className="h-9 p-0.5">
-            <TabsTrigger value="grid" className="h-8 w-8 p-0" title="Grid view">
+          <TabsList>
+            <TabsTrigger value="grid" title="Grid view">
               <IconLayoutGrid className="size-4" />
             </TabsTrigger>
-            <TabsTrigger value="list" className="h-8 w-8 p-0" title="List view">
+            <TabsTrigger value="list" title="List view">
               <IconLayoutList className="size-4" />
             </TabsTrigger>
           </TabsList>

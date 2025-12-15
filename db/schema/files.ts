@@ -6,7 +6,7 @@ import {
   bigint,
   uuid,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, type InferSelectModel } from "drizzle-orm";
 import { users } from "./auth";
 
 export const folders = pgTable("folders", {
@@ -65,3 +65,6 @@ export const filesRelations = relations(files, ({ one }) => ({
     references: [folders.id],
   }),
 }));
+
+export type Folder = InferSelectModel<typeof folders>;
+export type File = InferSelectModel<typeof files>;

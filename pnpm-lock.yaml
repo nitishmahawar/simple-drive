@@ -26,6 +26,9 @@ importers:
       '@orpc/client':
         specifier: ^1.12.3
         version: 1.12.3
+      '@orpc/experimental-ratelimit':
+        specifier: ^1.12.3
+        version: 1.12.3
       '@orpc/server':
         specifier: ^1.12.3
         version: 1.12.3
@@ -1180,6 +1183,14 @@ packages:
 
   '@orpc/contract@1.12.3':
     resolution: {integrity: sha512-WQJ9ljzZ8HRnRiRuDAYyez93nFbOYlTnt4RDDkZxy911mPIC+9e7JYOsgB2TThQCC8ue/crg5LRk46cEqWJYTw==}
+
+  '@orpc/experimental-ratelimit@1.12.3':
+    resolution: {integrity: sha512-5RLujoNza8TOtikh7SgJLjg9tX8wFro+gAjNebMBmZkMn0y/aiBR7YRrzpnhSzM6DG3H2psh3zdiFBkuF6hrew==}
+    peerDependencies:
+      '@upstash/ratelimit': '>=2.0.7'
+    peerDependenciesMeta:
+      '@upstash/ratelimit':
+        optional: true
 
   '@orpc/interop@1.12.3':
     resolution: {integrity: sha512-Qj0EdguHfNtEKO2mbuxLwTh+g+F58NOQz24IJrxLD7oWcBI5tArGeh1Jj2/obG/3VHKlKLtmWfBoQ/8j9kZINQ==}
@@ -6108,6 +6119,18 @@ snapshots:
       openapi-types: 12.1.3
     transitivePeerDependencies:
       - '@opentelemetry/api'
+
+  '@orpc/experimental-ratelimit@1.12.3':
+    dependencies:
+      '@orpc/client': 1.12.3
+      '@orpc/server': 1.12.3
+      '@orpc/shared': 1.12.3
+      '@orpc/standard-server': 1.12.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - crossws
+      - fastify
+      - ws
 
   '@orpc/interop@1.12.3': {}
 

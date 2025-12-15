@@ -6,8 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { IconFolderPlus, IconUpload } from "@tabler/icons-react";
 import { orpc } from "@/orpc/client";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { FileList } from "@/components/files/file-list";
+import { ContentSkeleton } from "@/components/skeletons/content-skeleton";
 import {
   FileToolbar,
   type SortBy,
@@ -59,14 +59,6 @@ const DrivePage = () => {
     setSearch(value);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner className="h-8 w-8" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -96,13 +88,17 @@ const DrivePage = () => {
         onViewModeChange={setViewMode}
       />
 
-      <FileList
-        folders={folders ?? []}
-        files={files ?? []}
-        onFolderClick={(folderId) => router.push(`/drive/${folderId}`)}
-        onUploadClick={() => setShowUpload(true)}
-        viewMode={viewMode}
-      />
+      {isLoading ? (
+        <ContentSkeleton />
+      ) : (
+        <FileList
+          folders={folders ?? []}
+          files={files ?? []}
+          onFolderClick={(folderId) => router.push(`/drive/${folderId}`)}
+          onUploadClick={() => setShowUpload(true)}
+          viewMode={viewMode}
+        />
+      )}
 
       <CreateFolderDialog
         parentId={null}

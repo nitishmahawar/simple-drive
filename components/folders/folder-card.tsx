@@ -1,13 +1,8 @@
 "use client";
 
 import { IconFolder } from "@tabler/icons-react";
+import { type Folder } from "@/db/schema";
 import { FolderActionsMenu } from "./folder-actions-menu";
-
-interface Folder {
-  id: string;
-  name: string;
-  createdAt: Date;
-}
 
 interface FolderCardProps {
   folder: Folder;

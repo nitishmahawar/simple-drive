@@ -1,17 +1,24 @@
 import { os, ORPCError } from "@orpc/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import {
+  createRatelimitMiddleware,
+  Ratelimiter,
+} from "@orpc/experimental-ratelimit";
+import { User } from "better-auth";
 
 interface Context {
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string | null;
-  };
+  user?: User;
+  ratelimiter?: Ratelimiter;
 }
 
-export const publicProcedure = os.$context<Context>();
+const rateLimitMiddleware = createRatelimitMiddleware({
+  limiter: ({ context }) => context.ratelimiter,
+  key: ({ context, path }) =>
+    context.user?.id || (context as any).ip || `global:${path}`, // Fallback to IP or global if needed
+});
+
+export const publicProcedure = os.$context<Context>().use(rateLimitMiddleware);
 
 export const protectedProcedure = publicProcedure.use(
   async ({ context, next }) => {

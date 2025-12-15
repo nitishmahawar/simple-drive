@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   IconStar,
   IconStarFilled,
@@ -19,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DeleteFileDialog } from "./delete-file-dialog";
 
 interface FileActionsMenuProps {
   fileId: string;
@@ -34,6 +36,7 @@ export const FileActionsMenu = ({
   showTrashActions = false,
 }: FileActionsMenuProps) => {
   const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const starMutation = useMutation(
     orpc.files.update.mutationOptions({
@@ -71,21 +74,6 @@ export const FileActionsMenu = ({
     })
   );
 
-  const deleteMutation = useMutation(
-    orpc.files.delete.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: orpc.files.list.key() });
-        queryClient.invalidateQueries({
-          queryKey: orpc.storage.getUsage.key(),
-        });
-        toast.success("File deleted permanently");
-      },
-      onError: () => {
-        toast.error("Failed to delete file");
-      },
-    })
-  );
-
   const downloadMutation = useMutation(
     orpc.storage.getDownloadUrl.mutationOptions({
       onSuccess: (data) => {
@@ -109,74 +97,80 @@ export const FileActionsMenu = ({
     restoreMutation.mutate({ id: fileId });
   };
 
-  const handleDelete = () => {
-    if (confirm(`Permanently delete "${fileName}"?`)) {
-      deleteMutation.mutate({ id: fileId });
-    }
-  };
-
   const handleDownload = () => {
     downloadMutation.mutate({ fileId });
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className=""
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconDotsVertical />
-          </Button>
-        }
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className=""
+              onClick={(e) => e.stopPropagation()}
+            >
+              <IconDotsVertical />
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          align="end"
+          className="w-[200px]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {!showTrashActions ? (
+            <>
+              <DropdownMenuItem onClick={handleStar}>
+                {isStarred ? (
+                  <>
+                    <IconStarFilled className="text-yellow-500" />
+                    Remove from starred
+                  </>
+                ) : (
+                  <>
+                    <IconStar />
+                    Add to starred
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownload}>
+                <IconDownload />
+                Download
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleTrash} variant="destructive">
+                <IconTrash />
+                Move to trash
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <>
+              <DropdownMenuItem onClick={handleRestore}>
+                <IconRestore />
+                Restore
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDeleteDialogOpen(true)}
+                variant="destructive"
+              >
+                <IconTrash />
+                Delete permanently
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DeleteFileDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        fileId={fileId}
+        fileName={fileName}
       />
-      <DropdownMenuContent
-        align="end"
-        className="w-[200px]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {!showTrashActions ? (
-          <>
-            <DropdownMenuItem onClick={handleStar}>
-              {isStarred ? (
-                <>
-                  <IconStarFilled className="text-yellow-500" />
-                  Remove from starred
-                </>
-              ) : (
-                <>
-                  <IconStar />
-                  Add to starred
-                </>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDownload}>
-              <IconDownload />
-              Download
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleTrash} variant="destructive">
-              <IconTrash />
-              Move to trash
-            </DropdownMenuItem>
-          </>
-        ) : (
-          <>
-            <DropdownMenuItem onClick={handleRestore}>
-              <IconRestore />
-              Restore
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDelete} variant="destructive">
-              <IconTrash />
-              Delete permanently
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    </>
   );
 };

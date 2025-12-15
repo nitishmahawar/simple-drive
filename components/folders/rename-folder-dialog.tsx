@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,42 +30,55 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface CreateFolderDialogProps {
-  parentId: string | null;
+interface RenameFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  folderId: string;
+  currentName: string;
 }
 
-export const CreateFolderDialog = ({
-  parentId,
+export const RenameFolderDialog = ({
   open,
   onOpenChange,
-}: CreateFolderDialogProps) => {
+  folderId,
+  currentName,
+}: RenameFolderDialogProps) => {
   const queryClient = useQueryClient();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: currentName,
     },
   });
 
-  const createMutation = useMutation(
-    orpc.folders.create.mutationOptions({
-      onSuccess: (folder) => {
+  // Update form default value when currentName changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({ name: currentName });
+    }
+  }, [open, currentName, form]);
+
+  const renameMutation = useMutation(
+    orpc.folders.update.mutationOptions({
+      onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: orpc.folders.list.key() });
-        toast.success(`Created folder "${folder.name}"`);
-        form.reset();
+        queryClient.invalidateQueries({ queryKey: orpc.folders.get.key() });
+        toast.success("Folder renamed");
         onOpenChange(false);
       },
       onError: () => {
-        toast.error("Failed to create folder");
+        toast.error("Failed to rename folder");
       },
     })
   );
 
   const handleSubmit = (data: FormValues) => {
-    createMutation.mutate({ name: data.name.trim(), parentId });
+    if (data.name.trim() !== currentName) {
+      renameMutation.mutate({ id: folderId, name: data.name.trim() });
+    } else {
+      onOpenChange(false);
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -76,12 +90,15 @@ export const CreateFolderDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <DialogHeader>
-            <DialogTitle>Create New Folder</DialogTitle>
+            <DialogTitle>Rename Folder</DialogTitle>
             <DialogDescription>
-              Enter a name for your new folder.
+              Enter a new name for this folder.
             </DialogDescription>
           </DialogHeader>
 
@@ -96,7 +113,7 @@ export const CreateFolderDialog = ({
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder="My Folder"
+                    placeholder="Folder name"
                     autoFocus
                     autoComplete="off"
                   />
@@ -116,9 +133,9 @@ export const CreateFolderDialog = ({
                 </Button>
               }
             />
-            <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending && <Spinner />}
-              Create
+            <Button type="submit" disabled={renameMutation.isPending}>
+              {renameMutation.isPending && <Spinner />}
+              Rename
             </Button>
           </DialogFooter>
         </form>

@@ -9,16 +9,8 @@ import {
   IconFileZip,
   IconStarFilled,
 } from "@tabler/icons-react";
+import { type File } from "@/db/schema";
 import { FileActionsMenu } from "./file-actions-menu";
-
-interface File {
-  id: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  isStarred: boolean;
-  createdAt: Date;
-}
 
 interface FileListRowProps {
   file: File;

@@ -25,6 +25,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Progress } from "@/components/ui/progress";
+import Image from "next/image";
 
 const navItems = [
   { href: "/drive", label: "My Drive", icon: IconFolder },
@@ -57,16 +58,15 @@ export const AppSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-4">
-          <IconCloud className="h-6 w-6 text-primary" />
+      <SidebarHeader className="pt-4">
+        <Link href="/drive" className="flex items-center gap-2 px-4">
+          <Image src="/logo.svg" alt="Logo" width={24} height={24} />
           <span className="text-lg font-semibold">Simple Drive</span>
-        </div>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -91,29 +91,17 @@ export const AppSidebar = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <div className="space-y-4 p-4">
+      <SidebarFooter className="pb-4">
+        <div className="space-y-4 p-4 border rounded-md">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Storage</span>
-              <span className="font-medium">
+              <span className="font-medium text-xs">
                 {usage ? formatBytes(usage.totalSize) : "..."} / 5 GB
               </span>
             </div>
             <Progress value={usagePercent} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              {usage?.fileCount ?? 0} files
-            </p>
           </div>
-
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleSignOut}>
-                <IconLogout />
-                <span>Sign out</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
         </div>
       </SidebarFooter>
     </Sidebar>

@@ -16,20 +16,7 @@ import { FolderCard } from "../folders/folder-card";
 import { FolderListRow } from "../folders/folder-list-row";
 import type { ViewMode } from "./file-toolbar";
 
-interface File {
-  id: string;
-  name: string;
-  size: number;
-  mimeType: string;
-  isStarred: boolean;
-  createdAt: Date;
-}
-
-interface Folder {
-  id: string;
-  name: string;
-  createdAt: Date;
-}
+import { type File, type Folder } from "@/db/schema";
 
 interface FileListProps {
   files: File[];
@@ -124,7 +111,7 @@ export const FileList = ({
           <h2 className="mb-3 text-sm font-medium text-muted-foreground">
             Folders
           </h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {folders.map((folder) => (
               <FolderCard
                 key={folder.id}
@@ -141,7 +128,7 @@ export const FileList = ({
           <h2 className="mb-3 text-sm font-medium text-muted-foreground">
             Files
           </h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {files.map((file) => (
               <FileCard
                 key={file.id}
