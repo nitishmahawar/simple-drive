@@ -5,7 +5,6 @@ import { IconSearch } from "@tabler/icons-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 interface HeaderProps {
   title?: string;
@@ -31,8 +30,6 @@ export const Header = ({ title }: HeaderProps) => {
             className="h-9 w-64 rounded-md border bg-background pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
-
-        <ThemeToggle />
 
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">

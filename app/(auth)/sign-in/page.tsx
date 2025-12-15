@@ -1,8 +1,12 @@
 "use client";
 
-import { IconBrandGoogle, IconCloud } from "@tabler/icons-react";
+import Image from "next/image";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { Google } from "@/components/icons/google";
 import {
   Card,
   CardContent,
@@ -12,20 +16,32 @@ import {
 } from "@/components/ui/card";
 
 const SignInPage = () => {
-  const handleGoogleSignIn = async () => {
-    await signIn.social({
-      provider: "google",
-      callbackURL: "/drive",
-    });
-  };
+  const signInMutation = useMutation({
+    mutationFn: async () => {
+      await signIn.social({
+        provider: "google",
+        callbackURL: "/drive",
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to sign in with Google");
+    },
+  });
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-104">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-          <IconCloud className="h-6 w-6 text-primary-foreground" />
+        <div className="mx-auto mb-4">
+          <Image
+            src="/logo.svg"
+            alt="Simple Drive"
+            width={64}
+            height={64}
+            priority
+            className="size-12"
+          />
         </div>
-        <CardTitle className="text-2xl">Welcome to Simple Drive</CardTitle>
+        <CardTitle className="text-lg">Welcome to Simple Drive</CardTitle>
         <CardDescription>
           Sign in to access your files from anywhere
         </CardDescription>
@@ -35,9 +51,10 @@ const SignInPage = () => {
           variant="outline"
           className="w-full"
           size="lg"
-          onClick={handleGoogleSignIn}
+          onClick={() => signInMutation.mutate()}
+          disabled={signInMutation.isPending}
         >
-          <IconBrandGoogle />
+          {signInMutation.isPending ? <Spinner /> : <Google />}
           Continue with Google
         </Button>
       </CardContent>

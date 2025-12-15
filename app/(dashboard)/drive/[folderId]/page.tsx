@@ -8,7 +8,7 @@ import { orpc } from "@/orpc/client";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { FileList } from "@/components/files/file-list";
-import { UploadZone } from "@/components/files/upload-zone";
+import { UploadDialog } from "@/components/files/upload-dialog";
 import { CreateFolderDialog } from "@/components/folders/create-folder-dialog";
 import { BreadcrumbNav } from "@/components/folders/breadcrumb-nav";
 
@@ -54,14 +54,12 @@ const FolderPage = () => {
             <IconFolderPlus />
             New Folder
           </Button>
-          <Button onClick={() => setShowUpload(!showUpload)}>
+          <Button onClick={() => setShowUpload(true)}>
             <IconUpload />
             Upload
           </Button>
         </div>
       </div>
-
-      {showUpload && <UploadZone folderId={folderId} />}
 
       <FileList
         folders={folders ?? []}
@@ -74,6 +72,12 @@ const FolderPage = () => {
         parentId={folderId}
         open={showCreateFolder}
         onOpenChange={setShowCreateFolder}
+      />
+
+      <UploadDialog
+        folderId={folderId}
+        open={showUpload}
+        onOpenChange={setShowUpload}
       />
     </div>
   );

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod/v3";
 import { toast } from "sonner";
 import { orpc } from "@/orpc/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import {
   Dialog,
   DialogClose,
@@ -16,6 +18,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+const formSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Folder name is required")
+    .max(100, "Folder name must be at most 100 characters"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface CreateFolderDialogProps {
   parentId: string | null;
@@ -28,15 +39,21 @@ export const CreateFolderDialog = ({
   open,
   onOpenChange,
 }: CreateFolderDialogProps) => {
-  const [name, setName] = useState("");
   const queryClient = useQueryClient();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
 
   const createMutation = useMutation(
     orpc.folders.create.mutationOptions({
       onSuccess: (folder) => {
-        queryClient.invalidateQueries({ queryKey: ["folders"] });
+        queryClient.invalidateQueries({ queryKey: orpc.folders.list.key() });
         toast.success(`Created folder "${folder.name}"`);
-        setName("");
+        form.reset();
         onOpenChange(false);
       },
       onError: () => {
@@ -45,17 +62,21 @@ export const CreateFolderDialog = ({
     })
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim()) {
-      createMutation.mutate({ name: name.trim(), parentId });
+  const handleSubmit = (data: FormValues) => {
+    createMutation.mutate({ name: data.name.trim(), parentId });
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      form.reset();
     }
+    onOpenChange(open);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={form.handleSubmit(handleSubmit)}>
           <DialogHeader>
             <DialogTitle>Create New Folder</DialogTitle>
             <DialogDescription>
@@ -63,17 +84,27 @@ export const CreateFolderDialog = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="folder-name">Folder name</Label>
-              <Input
-                id="folder-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="My Folder"
-                autoFocus
-              />
-            </div>
+          <div className="py-4">
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Folder name</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="My Folder"
+                    autoFocus
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           </div>
 
           <DialogFooter>
@@ -84,10 +115,7 @@ export const CreateFolderDialog = ({
                 </Button>
               }
             />
-            <Button
-              type="submit"
-              disabled={!name.trim() || createMutation.isPending}
-            >
+            <Button type="submit" disabled={createMutation.isPending}>
               {createMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>

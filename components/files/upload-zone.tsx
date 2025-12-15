@@ -22,8 +22,10 @@ export const UploadZone = ({ folderId }: UploadZoneProps) => {
   const createFileMutation = useMutation(
     orpc.files.create.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["files"] });
-        queryClient.invalidateQueries({ queryKey: ["storage"] });
+        queryClient.invalidateQueries({ queryKey: orpc.files.list.key() });
+        queryClient.invalidateQueries({
+          queryKey: orpc.storage.getUsage.key(),
+        });
       },
     })
   );

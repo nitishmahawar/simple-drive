@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { IconTrash } from "@tabler/icons-react";
 import { orpc } from "@/orpc/client";
-import { Spinner } from "@/components/ui/spinner";
 import { FileList } from "@/components/files/file-list";
+import { FilesPageSkeleton } from "@/components/skeletons/files-skeleton";
 
 const TrashPage = () => {
   const { data: files, isLoading } = useQuery(
@@ -12,11 +12,7 @@ const TrashPage = () => {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner className="h-8 w-8" />
-      </div>
-    );
+    return <FilesPageSkeleton />;
   }
 
   return (
