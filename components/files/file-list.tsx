@@ -11,7 +11,10 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { FileCard } from "./file-card";
+import { FileListRow } from "./file-list-row";
 import { FolderCard } from "../folders/folder-card";
+import { FolderListRow } from "../folders/folder-list-row";
+import type { ViewMode } from "./file-toolbar";
 
 interface File {
   id: string;
@@ -37,6 +40,7 @@ interface FileListProps {
   onUploadClick?: () => void;
   emptyTitle?: string;
   emptyDescription?: string;
+  viewMode?: ViewMode;
 }
 
 export const FileList = ({
@@ -48,6 +52,7 @@ export const FileList = ({
   onUploadClick,
   emptyTitle = "No files or folders",
   emptyDescription = "Upload files or create folders to get started",
+  viewMode = "grid",
 }: FileListProps) => {
   if (folders.length === 0 && files.length === 0) {
     return (
@@ -68,6 +73,47 @@ export const FileList = ({
           </EmptyContent>
         )}
       </Empty>
+    );
+  }
+
+  if (viewMode === "list") {
+    return (
+      <div className="space-y-4">
+        {folders.length > 0 && (
+          <div>
+            <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+              Folders
+            </h2>
+            <div className="space-y-2">
+              {folders.map((folder) => (
+                <FolderListRow
+                  key={folder.id}
+                  folder={folder}
+                  onClick={() => onFolderClick(folder.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {files.length > 0 && (
+          <div>
+            <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+              Files
+            </h2>
+            <div className="space-y-2">
+              {files.map((file) => (
+                <FileListRow
+                  key={file.id}
+                  file={file}
+                  onClick={() => onFileClick?.(file.id)}
+                  showTrashActions={showTrashActions}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 

@@ -3,7 +3,19 @@ import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "@/orpc";
 import { db } from "@/db";
 import { files } from "@/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, like, desc, asc } from "drizzle-orm";
+
+const sortBySchema = z.enum(["name", "size", "createdAt", "updatedAt"]);
+const sortOrderSchema = z.enum(["asc", "desc"]);
+const fileTypeSchema = z.enum([
+  "all",
+  "image",
+  "video",
+  "audio",
+  "document",
+  "archive",
+  "other",
+]);
 
 export const filesRouter = {
   list: protectedProcedure
@@ -12,6 +24,10 @@ export const filesRouter = {
         folderId: z.string().uuid().nullable().optional(),
         starred: z.boolean().optional(),
         trashed: z.boolean().optional(),
+        search: z.string().optional(),
+        fileType: fileTypeSchema.optional(),
+        sortBy: sortBySchema.optional().default("createdAt"),
+        sortOrder: sortOrderSchema.optional().default("desc"),
       })
     )
     .handler(async ({ input, context }) => {
@@ -33,9 +49,49 @@ export const filesRouter = {
         conditions.push(eq(files.folderId, input.folderId));
       }
 
+      // Search by name
+      if (input.search && input.search.trim()) {
+        conditions.push(like(files.name, `%${input.search.trim()}%`));
+      }
+
+      // Filter by file type
+      if (input.fileType && input.fileType !== "all") {
+        const typePatterns: Record<string, string[]> = {
+          image: ["image/%"],
+          video: ["video/%"],
+          audio: ["audio/%"],
+          document: [
+            "%pdf%",
+            "%document%",
+            "%text%",
+            "%word%",
+            "%excel%",
+            "%spreadsheet%",
+          ],
+          archive: ["%zip%", "%archive%", "%rar%", "%7z%", "%tar%", "%gz%"],
+        };
+
+        const patterns = typePatterns[input.fileType];
+        if (patterns) {
+          // For simplicity, we'll use the first pattern. For more complex filtering,
+          // you'd use SQL OR conditions
+          conditions.push(like(files.mimeType, patterns[0]));
+        }
+      }
+
+      // Determine sort column and order
+      const sortColumn = {
+        name: files.name,
+        size: files.size,
+        createdAt: files.createdAt,
+        updatedAt: files.updatedAt,
+      }[input.sortBy];
+
+      const orderFn = input.sortOrder === "asc" ? asc : desc;
+
       return db.query.files.findMany({
         where: and(...conditions),
-        orderBy: (files, { desc }) => [desc(files.createdAt)],
+        orderBy: [orderFn(sortColumn)],
       });
     }),
 

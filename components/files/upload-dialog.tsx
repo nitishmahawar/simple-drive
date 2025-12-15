@@ -123,7 +123,7 @@ export const UploadDialog = ({
     Record<string, UploadProgress>
   >({});
 
-  const maxSize = 100 * 1024 * 1024; // 100MB
+  const maxSize = 1024 * 1024 * 1024; // 1GB
   const maxFiles = 10;
 
   const [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { IconFolderPlus, IconUpload } from "@tabler/icons-react";
@@ -8,6 +8,13 @@ import { orpc } from "@/orpc/client";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { FileList } from "@/components/files/file-list";
+import {
+  FileToolbar,
+  type SortBy,
+  type SortOrder,
+  type FileType,
+  type ViewMode,
+} from "@/components/files/file-toolbar";
 import { UploadDialog } from "@/components/files/upload-dialog";
 import { CreateFolderDialog } from "@/components/folders/create-folder-dialog";
 import { BreadcrumbNav } from "@/components/folders/breadcrumb-nav";
@@ -20,19 +27,50 @@ const FolderPage = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [showCreateFolder, setShowCreateFolder] = useState(false);
 
+  // Toolbar state
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<SortBy>("createdAt");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [fileType, setFileType] = useState<FileType>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+
+  // Reset search when changing folders
+  useEffect(() => {
+    setSearch("");
+  }, [folderId]);
+
   const { data: folder, isLoading: folderLoading } = useQuery(
     orpc.folders.get.queryOptions({ input: { id: folderId } })
   );
 
   const { data: folders, isLoading: foldersLoading } = useQuery(
-    orpc.folders.list.queryOptions({ input: { parentId: folderId } })
+    orpc.folders.list.queryOptions({
+      input: {
+        parentId: folderId,
+        search: search || undefined,
+        sortBy: sortBy === "size" ? "name" : sortBy,
+        sortOrder,
+      },
+    })
   );
 
   const { data: files, isLoading: filesLoading } = useQuery(
-    orpc.files.list.queryOptions({ input: { folderId } })
+    orpc.files.list.queryOptions({
+      input: {
+        folderId,
+        search: search || undefined,
+        fileType: fileType !== "all" ? fileType : undefined,
+        sortBy,
+        sortOrder,
+      },
+    })
   );
 
   const isLoading = folderLoading || foldersLoading || filesLoading;
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+  }, []);
 
   if (isLoading) {
     return (
@@ -61,11 +99,25 @@ const FolderPage = () => {
         </div>
       </div>
 
+      <FileToolbar
+        search={search}
+        onSearchChange={handleSearchChange}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
+        fileType={fileType}
+        onFileTypeChange={setFileType}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+
       <FileList
         folders={folders ?? []}
         files={files ?? []}
         onFolderClick={(id) => router.push(`/drive/${id}`)}
         onUploadClick={() => setShowUpload(true)}
+        viewMode={viewMode}
       />
 
       <CreateFolderDialog

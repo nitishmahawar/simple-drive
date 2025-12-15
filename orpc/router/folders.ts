@@ -3,13 +3,19 @@ import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "@/orpc";
 import { db } from "@/db";
 import { folders, files } from "@/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, like, desc, asc } from "drizzle-orm";
+
+const sortBySchema = z.enum(["name", "createdAt", "updatedAt"]);
+const sortOrderSchema = z.enum(["asc", "desc"]);
 
 export const foldersRouter = {
   list: protectedProcedure
     .input(
       z.object({
         parentId: z.string().uuid().nullable().optional(),
+        search: z.string().optional(),
+        sortBy: sortBySchema.optional().default("name"),
+        sortOrder: sortOrderSchema.optional().default("asc"),
       })
     )
     .handler(async ({ input, context }) => {
@@ -21,9 +27,23 @@ export const foldersRouter = {
         conditions.push(eq(folders.parentId, input.parentId));
       }
 
+      // Search by name
+      if (input.search && input.search.trim()) {
+        conditions.push(like(folders.name, `%${input.search.trim()}%`));
+      }
+
+      // Determine sort column and order
+      const sortColumn = {
+        name: folders.name,
+        createdAt: folders.createdAt,
+        updatedAt: folders.updatedAt,
+      }[input.sortBy];
+
+      const orderFn = input.sortOrder === "asc" ? asc : desc;
+
       return db.query.folders.findMany({
         where: and(...conditions),
-        orderBy: (folders, { asc }) => [asc(folders.name)],
+        orderBy: [orderFn(sortColumn)],
       });
     }),
 
