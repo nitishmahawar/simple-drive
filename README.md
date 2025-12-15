@@ -9,7 +9,7 @@ Simple Drive is a modern, full-stack file storage application built with Next.js
 - **Secure Authentication**: robust authentication system powered by `better-auth`.
 - **File Management**: Upload, organize, rename, and delete files with ease. Support for various file types including images, videos, audio, and documents.
 - **Folder Organization**: Create nestable folders to keep your files structured.
-- **Storage Management**: Real-time storage usage tracking via AWS S3 integration.
+- **Storage Management**: Real-time storage usage tracking via Cloudflare R2 integration.
 - **Efficient Data Handling**: Type-safe RPC with `@orpc` for seamless client-server communication.
 - **Modern UI/UX**: Built with `shadcn/ui` and `Tailwind CSS` for a beautiful, responsive, and accessible interface.
 - **Dark Mode**: Fully supports light and dark themes.
@@ -21,7 +21,7 @@ Simple Drive is a modern, full-stack file storage application built with Next.js
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Shadcn UI](https://ui.shadcn.com/)
 - **Database**: [PostgreSQL](https://www.postgresql.org/) (via [Neon Database](https://neon.tech/))
 - **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
-- **Storage**: [AWS S3](https://aws.amazon.com/s3/)
+- **Storage**: [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/)
 - **API layer**: [ORPC](https://orpc.unnoq.com/) (Open RPC)
 - **State Management**: [TanStack Query](https://tanstack.com/query/latest)
 
@@ -32,7 +32,7 @@ Simple Drive is a modern, full-stack file storage application built with Next.js
 - Node.js 18+
 - pnpm (recommended) or npm/yarn
 - PostgreSQL database (Neon recommended)
-- AWS S3 Bucket or compatible storage
+- Cloudflare R2 Bucket
 
 ### Installation
 
@@ -60,12 +60,15 @@ Simple Drive is a modern, full-stack file storage application built with Next.js
     # Authentication
     BETTER_AUTH_SECRET="your_auth_secret"
     BETTER_AUTH_URL="http://localhost:3000"
+    GOOGLE_CLIENT_ID="your_google_client_id"
+    GOOGLE_CLIENT_SECRET="your_google_client_secret"
 
-    # AWS S3
-    AWS_ACCESS_KEY_ID="your_aws_key"
-    AWS_SECRET_ACCESS_KEY="your_aws_secret"
-    AWS_REGION="us-east-1"
-    AWS_BUCKET_NAME="your_bucket_name"
+    # Cloudflare R2
+    R2_ACCOUNT_ID="your_r2_account_id"
+    R2_ACCESS_KEY_ID="your_r2_access_key_id"
+    R2_SECRET_ACCESS_KEY="your_r2_secret_access_key"
+    R2_BUCKET_NAME="your_bucket_name"
+    R2_PUBLIC_URL="your_public_url"
     ```
 
 4.  **Database Setup**
